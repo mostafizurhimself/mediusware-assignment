@@ -3,21 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\ProductVariantPrice;
+use App\Models\ProductImage;
 use App\Models\Variant;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\ProductVariant;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
+use App\Models\ProductVariantPrice;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\File\File;
 
 class ProductController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Http\Response|\Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('products.index');
+        $products = Product::filter($request->all())->with('variants', 'prices')->paginate(5);
+        return view('products.index', [
+            'products' => $products,
+            'variants' => Variant::with('productVariants')->get()
+        ]);
     }
 
     /**
@@ -39,7 +50,37 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        return DB::transaction(function () use ($request) {
+            $product = Product::create($request->only('title', 'sku', 'description'));
+            // Add variants
+            foreach ($request->get('product_variant') as $variant) {
+                foreach ($variant['tags'] as $tag) {
+                    $product->variants()->create(['variant' => $tag, 'variant_id' => $variant['option']]);
+                }
+            }
 
+            // Add Price variants
+            foreach ($request->get('product_variant_prices') as $price) {
+                $variant = explode('/', $price['title']);
+                $product->prices()->create([
+                    'product_variant_one'   => $variant[0] ? $product->variants()->where('variant', $variant[0])->first()->id : null,
+                    'product_variant_two'   => $variant[1] ? $product->variants()->where('variant', $variant[1])->first()->id : null,
+                    'product_variant_three' => $variant[2] ? $product->variants()->where('variant', $variant[2])->first()->id : null,
+                    'price'                 => $price['price'],
+                    'stock'                 => $price['stock'],
+                ]);
+            }
+
+            // Add product images{
+            foreach ($request->get('product_image') as $imgString) {
+                $path = ProductImage::uploadFile($imgString);
+                $product->images()->create([
+                    'file_path' => $path
+                ]);
+            }
+
+            return $product;
+        });
     }
 
 
@@ -51,7 +92,6 @@ class ProductController extends Controller
      */
     public function show($product)
     {
-
     }
 
     /**

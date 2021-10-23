@@ -6,7 +6,12 @@
 
 require('./bootstrap');
 require('./sb-admin');
+import Toasted from 'vue-toasted';
 window.Vue = require('vue');
+window.Vue.use(Toasted, {
+    position: 'top-center',
+    duration: 2000
+})
 
 /**
  * The following block of code may be used to automatically register your
