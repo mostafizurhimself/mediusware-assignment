@@ -2021,19 +2021,24 @@ __webpack_require__.r(__webpack_exports__);
     variants: {
       type: Array,
       required: true
+    },
+    product: {
+      type: Object
     }
   },
   data: function data() {
+    var _this$product, _this$product2, _this$product3;
+
     return {
-      product_name: "",
-      product_sku: "",
-      description: "",
+      product_name: (_this$product = this.product) === null || _this$product === void 0 ? void 0 : _this$product.title,
+      product_sku: (_this$product2 = this.product) === null || _this$product2 === void 0 ? void 0 : _this$product2.sku,
+      description: (_this$product3 = this.product) === null || _this$product3 === void 0 ? void 0 : _this$product3.description,
       images: [],
       product_variant: [{
         option: this.variants[0].id,
         tags: []
       }],
-      product_variant_prices: [],
+      product_variant_prices: this.product ? this.product.product_variant_prices : [],
       dropzoneOptions: {
         url: "https://httpbin.org/post",
         thumbnailWidth: 150,
@@ -2041,7 +2046,8 @@ __webpack_require__.r(__webpack_exports__);
         headers: {
           "My-Awesome-Header": "header value"
         }
-      }
+      },
+      edit: this.product ? true : false
     };
   },
   methods: {
@@ -2135,8 +2141,7 @@ __webpack_require__.r(__webpack_exports__);
       this.$refs.myVueDropzone.removeAllFiles();
     }
   },
-  mounted: function mounted() {
-    console.log("Component mounted.");
+  mounted: function mounted() {//
   }
 });
 

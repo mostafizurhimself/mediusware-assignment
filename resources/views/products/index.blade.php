@@ -73,24 +73,21 @@
                                 <td>
                                     <dl class="row mb-0" style="height: 80px; overflow: hidden"
                                         id="variant-{{ $product->id }}">
-
-                                        <dt class="col-sm-3 pb-0">
-                                            @foreach ($product->variants as $item)
-                                                {{ $item->variant }}/
-                                            @endforeach
-                                        </dt>
-                                        <dd class="col-sm-9">
-                                            @foreach ($product->prices as $item)
+                                        @foreach ($product->product_variant_prices as $item)
+                                            <dt class="col-sm-3 pb-0">
+                                                {{ $item['title'] }}
+                                            </dt>
+                                            <dd class="col-sm-9">
                                                 <dl class="row mb-0">
                                                     <dt class="col-sm-6 pb-0">
                                                         <span>Price :
-                                                            {{ number_format($item->price, 2) }}</span>
+                                                            {{ number_format($item['price'], 2) }}</span>
                                                     </dt>
                                                     <dd class="col-sm-6 pb-0">InStock :
-                                                        {{ number_format($item->stock, 2) }}</dd>
+                                                        {{ number_format($item['stock'], 2) }}</dd>
                                                 </dl>
-                                            @endforeach
-                                        </dd>
+                                            </dd>
+                                        @endforeach
                                     </dl>
                                     <button onclick="$('#variant-{{ $product->id }}').toggleClass('h-auto')"
                                         class="btn btn-sm btn-link">Show

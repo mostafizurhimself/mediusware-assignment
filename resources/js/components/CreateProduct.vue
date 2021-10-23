@@ -108,12 +108,15 @@ export default {
 			type: Array,
 			required: true,
 		},
+		product: {
+			type: Object,
+		},
 	},
 	data() {
 		return {
-			product_name: "",
-			product_sku: "",
-			description: "",
+			product_name: this.product?.title,
+			product_sku: this.product?.sku,
+			description: this.product?.description,
 			images: [],
 			product_variant: [
 				{
@@ -121,13 +124,16 @@ export default {
 					tags: [],
 				},
 			],
-			product_variant_prices: [],
+			product_variant_prices: this.product
+				? this.product.product_variant_prices
+				: [],
 			dropzoneOptions: {
 				url: "https://httpbin.org/post",
 				thumbnailWidth: 150,
 				maxFilesize: 0.5,
 				headers: { "My-Awesome-Header": "header value" },
 			},
+			edit: this.product ? true : false,
 		};
 	},
 	methods: {
@@ -223,7 +229,7 @@ export default {
 		},
 	},
 	mounted() {
-		console.log("Component mounted.");
+		//
 	},
 };
 </script>

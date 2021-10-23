@@ -19,4 +19,42 @@ class ProductVariantPrice extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    /**
+     * Determines one-to-many relation
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function variantOne()
+    {
+        return $this->belongsTo(ProductVariant::class, 'product_variant_one', 'id')->withDefault(['variant' => '']);
+    }
+
+    /**
+     * Determines one-to-many relation
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function variantTwo()
+    {
+        return $this->belongsTo(ProductVariant::class, 'product_variant_two', 'id')->withDefault(['variant' => '']);
+    }
+
+    /**
+     * Determines one-to-many relation
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function variantThree()
+    {
+        return $this->belongsTo(ProductVariant::class, 'product_variant_three', 'id')->withDefault(['variant' => '']);
+    }
+
+    /**
+     * Get the title property
+     */
+    public function getTitleAttribute()
+    {
+        return $this->variantOne->variant . "/" . $this->variantTwo->variant . "/" . $this->variantThree->variant;
+    }
 }

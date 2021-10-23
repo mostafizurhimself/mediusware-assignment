@@ -15,6 +15,13 @@ class Product extends Model
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['product_variant_prices'];
+
+    /**
      * Determines one-to-many relation
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
@@ -42,5 +49,27 @@ class Product extends Model
     public function prices()
     {
         return $this->hasMany(ProductVariantPrice::class, 'product_id', 'id');
+    }
+
+    /**
+     * Get the product variants attribute
+     */
+    public function getProductVariantAttribute()
+    {
+        return $this->variants->groupBy('variant_id')->all();
+    }
+
+    /**
+     * Get the product variant prices attribute
+     */
+    public function getProductVariantPricesAttribute()
+    {
+        return $this->prices->map(function ($item) {
+            return [
+                'title' => $item->title,
+                'price' => $item->price,
+                'stock' => $item->stock,
+            ];
+        })->toArray();
     }
 }
