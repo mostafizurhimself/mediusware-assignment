@@ -67,7 +67,11 @@ class Product extends Model
      */
     public function getProductVariantAttribute()
     {
-        return $this->productVariants->groupBy('variant_id')->toArray();
+        return $this->variants->unique()->each(function ($variant) {
+            return $variant['tags'] = $variant->productVariants()->where('product_id', $this->id)->get()->pluck('variant');
+        })->each(function ($variant) {
+            return $variant['option'] = $variant->id;
+        })->toArray();
     }
 
     /**

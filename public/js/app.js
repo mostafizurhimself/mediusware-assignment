@@ -2145,12 +2145,15 @@ __webpack_require__.r(__webpack_exports__);
     var _this3 = this;
 
     if (this.product) {
+      // Set the image
       this.product.image_urls.forEach(function (item) {
         _this3.$refs.myVueDropzone.manuallyAddFile({
           size: item.size,
           name: item.name
         }, item.url);
-      });
+      }); // Set the product variant
+
+      this.product_variant = this.product.product_variant;
     }
   }
 });
@@ -50686,7 +50689,7 @@ var render = function() {
                               on: {
                                 click: function($event) {
                                   _vm.product_variant.splice(index, 1)
-                                  _vm.checkVariant
+                                  _vm.checkVariant()
                                 }
                               }
                             },
