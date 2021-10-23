@@ -2141,7 +2141,17 @@ __webpack_require__.r(__webpack_exports__);
       this.$refs.myVueDropzone.removeAllFiles();
     }
   },
-  mounted: function mounted() {//
+  mounted: function mounted() {
+    var _this3 = this;
+
+    if (this.product) {
+      this.product.image_urls.forEach(function (item) {
+        _this3.$refs.myVueDropzone.manuallyAddFile({
+          size: item.size,
+          name: item.name
+        }, item.url);
+      });
+    }
   }
 });
 

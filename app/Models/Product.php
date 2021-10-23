@@ -4,6 +4,7 @@ namespace App\Models;
 
 use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Product extends Model
@@ -32,11 +33,21 @@ class Product extends Model
     }
 
     /**
+     * The variants that belong to the Product
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function variants(): BelongsToMany
+    {
+        return $this->belongsToMany(Variant::class, 'product_variants');
+    }
+
+    /**
      * Determines one-to-many relation
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function variants()
+    public function productVariants()
     {
         return $this->hasMany(ProductVariant::class);
     }
@@ -56,7 +67,7 @@ class Product extends Model
      */
     public function getProductVariantAttribute()
     {
-        return $this->variants->groupBy('variant_id')->all();
+        return $this->productVariants->groupBy('variant_id')->toArray();
     }
 
     /**
@@ -66,9 +77,24 @@ class Product extends Model
     {
         return $this->prices->map(function ($item) {
             return [
+                'id'    => $item->id,
                 'title' => $item->title,
                 'price' => $item->price,
                 'stock' => $item->stock,
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Get image urls attribute
+     */
+    public function getImageUrlsAttribute()
+    {
+        return $this->images->map(function ($image) {
+            return [
+                "name" => basename($image->file_path),
+                "size" => Storage::disk('public')->size($image->file_path),
+                "url" => asset(Storage::url($image->file_path))
             ];
         })->toArray();
     }

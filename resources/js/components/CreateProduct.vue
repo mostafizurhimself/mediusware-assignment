@@ -229,7 +229,14 @@ export default {
 		},
 	},
 	mounted() {
-		//
+		if (this.product) {
+			this.product.image_urls.forEach((item) => {
+				this.$refs.myVueDropzone.manuallyAddFile(
+					{ size: item.size, name: item.name },
+					item.url
+				);
+			});
+		}
 	},
 };
 </script>

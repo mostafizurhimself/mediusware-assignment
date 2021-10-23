@@ -24,7 +24,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $products = Product::filter($request->all())->with('variants', 'prices.variantOne', 'prices.variantTwo', 'prices.variantThree')->paginate(5);
+        $products = Product::filter($request->all())->with('productVariants', 'prices.variantOne', 'prices.variantTwo', 'prices.variantThree')->orderBy('id', 'desc')->paginate(5);
         return view('products.index', [
             'products' => $products,
             'variants' => Variant::with('productVariants')->get()
@@ -55,7 +55,7 @@ class ProductController extends Controller
             // Add variants
             foreach ($request->get('product_variant') as $variant) {
                 foreach ($variant['tags'] as $tag) {
-                    $product->variants()->create(['variant' => $tag, 'variant_id' => $variant['option']]);
+                    $product->productVariants()->create(['variant' => $tag, 'variant_id' => $variant['option']]);
                 }
             }
 
@@ -105,7 +105,7 @@ class ProductController extends Controller
         $variants = Variant::all();
         return view('products.edit', [
             'variants' => $variants,
-            'product'  => $product->load('images', 'variants', 'prices.variantOne', 'prices.variantTwo', 'prices.variantThree')->append('product_variant', 'product_variant_prices')
+            'product'  => $product->load('images', 'productVariants', 'prices.variantOne', 'prices.variantTwo', 'prices.variantThree',)->append('product_variant', 'product_variant_prices', 'image_urls')
         ]);
     }
 

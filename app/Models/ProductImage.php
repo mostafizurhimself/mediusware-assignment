@@ -43,6 +43,6 @@ class ProductImage extends Model
             true // Mark it as test, since the file isn't from real HTTP POST.
         );
 
-        return $file->store('images');
+        return $file->store('images', 'public');
     }
 }
