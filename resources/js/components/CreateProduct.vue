@@ -7,14 +7,17 @@
 						<div class="form-group">
 							<label for="">Product Name</label>
 							<input type="text" v-model="product_name" placeholder="Product Name" class="form-control">
+							<input-error :message="errors.title"></input-error>
 						</div>
 						<div class="form-group">
 							<label for="">Product SKU</label>
-							<input type="text" v-model="product_sku" placeholder="Product Name" class="form-control">
+							<input type="text" v-model="product_sku" placeholder="Product SKU" class="form-control">
+							<input-error :message="errors.sku"></input-error>
 						</div>
 						<div class="form-group">
 							<label for="">Description</label>
 							<textarea v-model="description" id="" cols="30" rows="4" class="form-control"></textarea>
+							<input-error :message="errors.description"></input-error>
 						</div>
 					</div>
 				</div>
@@ -88,8 +91,8 @@
 			</div>
 		</div>
 
-		<button @click="saveProduct" type="submit" class="btn btn-lg btn-primary">Save</button>
-		<button type="button" class="btn btn-secondary btn-lg">Cancel</button>
+		<button @click="saveProduct" :disabled="processing" type="submit" class="btn btn-lg btn-primary">Save</button>
+		<a href="/product" class="btn btn-secondary btn-lg">Cancel</a>
 	</section>
 </template>
 
@@ -97,11 +100,13 @@
 import vue2Dropzone from "vue2-dropzone";
 import "vue2-dropzone/dist/vue2Dropzone.min.css";
 import InputTag from "vue-input-tag";
+import InputError from "./InputError.vue";
 
 export default {
 	components: {
 		vueDropzone: vue2Dropzone,
 		InputTag,
+		InputError,
 	},
 	props: {
 		variants: {
@@ -134,6 +139,8 @@ export default {
 				headers: { "My-Awesome-Header": "header value" },
 			},
 			edit: this.product ? true : false,
+			processing: false,
+			errors: {},
 		};
 	},
 	methods: {
@@ -200,16 +207,37 @@ export default {
 				product_variant_prices: this.product_variant_prices,
 			};
 
-			axios
-				.post("/product", product)
-				.then((response) => {
-					this.reset();
-					this.$toasted.success("Product created successfully");
-				})
-				.catch((error) => {
-					console.error(error);
-					this.$toasted.error("Operation failed");
-				});
+			this.processing = true;
+
+			if (this.edit) {
+				axios
+					.put(`/product/${this.product.id}`, product)
+					.then((response) => {
+						this.$toasted.success("Product updated successfully");
+						this.processing = false;
+					})
+					.catch((error) => {
+						if (error.response.status === 422) {
+							this.setErrors(error.response.data.errors);
+						}
+						this.processing = false;
+						this.$toasted.error("Operation failed");
+					});
+			} else {
+				axios
+					.post("/product", product)
+					.then((response) => {
+						this.reset();
+						this.$toasted.success("Product created successfully");
+					})
+					.catch((error) => {
+						if (error.response.status === 422) {
+							this.setErrors(error.response.data.errors);
+						}
+						this.processing = false;
+						this.$toasted.error("Operation failed");
+					});
+			}
 		},
 
 		//reset data
@@ -226,6 +254,14 @@ export default {
 			];
 			this.product_variant_prices = [];
 			this.$refs.myVueDropzone.removeAllFiles();
+			this.errors = {};
+		},
+
+		// Set errors
+		setErrors(errors) {
+			for (const [key, value] of Object.entries(errors)) {
+				this.errors[key] = value[0];
+			}
 		},
 	},
 	mounted() {

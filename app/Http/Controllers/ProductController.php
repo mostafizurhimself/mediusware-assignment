@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProductRequest;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\Variant;
@@ -24,7 +25,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $products = Product::filter($request->all())->with('productVariants', 'prices.variantOne', 'prices.variantTwo', 'prices.variantThree')->orderBy('id', 'desc')->paginate(5);
+        $products = Product::filter($request->all())->with('productVariants', 'prices.variantOne', 'prices.variantTwo', 'prices.variantThree')->latest()->paginate(5);
         return view('products.index', [
             'products' => $products,
             'variants' => Variant::with('productVariants')->get()
@@ -48,7 +49,7 @@ class ProductController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(ProductRequest $request)
     {
         return DB::transaction(function () use ($request) {
             $product = Product::create($request->only('title', 'sku', 'description'));
@@ -63,9 +64,9 @@ class ProductController extends Controller
             foreach ($request->get('product_variant_prices') as $price) {
                 $variant = explode('/', $price['title']);
                 $product->prices()->create([
-                    'product_variant_one'   => $variant[0] ? $product->variants()->where('variant', $variant[0])->first()->id : null,
-                    'product_variant_two'   => $variant[1] ? $product->variants()->where('variant', $variant[1])->first()->id : null,
-                    'product_variant_three' => $variant[2] ? $product->variants()->where('variant', $variant[2])->first()->id : null,
+                    'product_variant_one'   => $variant[0] ? $product->productVariants()->where('variant', $variant[0])->first()->id : null,
+                    'product_variant_two'   => $variant[1] ? $product->productVariants()->where('variant', $variant[1])->first()->id : null,
+                    'product_variant_three' => $variant[2] ? $product->productVariants()->where('variant', $variant[2])->first()->id : null,
                     'price'                 => $price['price'],
                     'stock'                 => $price['stock'],
                 ]);
@@ -116,9 +117,43 @@ class ProductController extends Controller
      * @param \App\Models\Product $product
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Product $product)
+    public function update(ProductRequest $request, Product $product)
     {
-        //
+        DB::transaction(function () use ($product, $request) {
+            $product->update($request->only('title', 'sku', 'description'));
+
+            // Update variants
+            $product->productVariants()->delete();
+            foreach ($request->get('product_variant') as $variant) {
+                foreach ($variant['tags'] as $tag) {
+                    $product->productVariants()->create(['variant' => $tag, 'variant_id' => $variant['option']]);
+                }
+            }
+
+
+            // Update Price variants
+            $product->prices()->delete();
+            foreach ($request->get('product_variant_prices') as $price) {
+                $variant = explode('/', $price['title']);
+                $product->prices()->create([
+                    'product_variant_one'   => $variant[0] ? $product->productVariants()->where('variant', $variant[0])->first()->id : null,
+                    'product_variant_two'   => $variant[1] ? $product->productVariants()->where('variant', $variant[1])->first()->id : null,
+                    'product_variant_three' => $variant[2] ? $product->productVariants()->where('variant', $variant[2])->first()->id : null,
+                    'price'                 => $price['price'],
+                    'stock'                 => $price['stock'],
+                ]);
+            }
+
+            // Add product images{
+            foreach ($request->get('product_image') as $imgString) {
+                $path = ProductImage::uploadFile($imgString);
+                $product->images()->create([
+                    'file_path' => $path
+                ]);
+            }
+        });
+
+        return $product;
     }
 
     /**
