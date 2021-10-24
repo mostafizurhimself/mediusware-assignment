@@ -64,9 +64,9 @@ class ProductController extends Controller
             foreach ($request->get('product_variant_prices') as $price) {
                 $variant = explode('/', $price['title']);
                 $product->prices()->create([
-                    'product_variant_one'   => $variant[0] ? $product->productVariants()->where('variant', $variant[0])->first()->id : null,
-                    'product_variant_two'   => $variant[1] ? $product->productVariants()->where('variant', $variant[1])->first()->id : null,
-                    'product_variant_three' => $variant[2] ? $product->productVariants()->where('variant', $variant[2])->first()->id : null,
+                    'product_variant_one'   => !empty($variant[0]) ? $product->productVariants()->where('variant', $variant[0])->first()->id : null,
+                    'product_variant_two'   => !empty($variant[1]) ? $product->productVariants()->where('variant', $variant[1])->first()->id : null,
+                    'product_variant_three' => !empty($variant[2]) ? $product->productVariants()->where('variant', $variant[2])->first()->id : null,
                     'price'                 => $price['price'],
                     'stock'                 => $price['stock'],
                 ]);
@@ -136,9 +136,9 @@ class ProductController extends Controller
             foreach ($request->get('product_variant_prices') as $price) {
                 $variant = explode('/', $price['title']);
                 $product->prices()->create([
-                    'product_variant_one'   => $variant[0] ? $product->productVariants()->where('variant', $variant[0])->first()->id : null,
-                    'product_variant_two'   => $variant[1] ? $product->productVariants()->where('variant', $variant[1])->first()->id : null,
-                    'product_variant_three' => $variant[2] ? $product->productVariants()->where('variant', $variant[2])->first()->id : null,
+                    'product_variant_one'   => !empty($variant[0]) ? $product->productVariants()->where('variant', $variant[0])->first()->id : null,
+                    'product_variant_two'   => !empty($variant[1]) ? $product->productVariants()->where('variant', $variant[1])->first()->id : null,
+                    'product_variant_three' => !empty($variant[2]) ? $product->productVariants()->where('variant', $variant[2])->first()->id : null,
                     'price'                 => $price['price'],
                     'stock'                 => $price['stock'],
                 ]);
